@@ -3,7 +3,7 @@ tests:
     command: |
         conda install -y git
         git clone --recursive -b v$(python -c "import transformers; print(transformers.__version__)") https://github.com/huggingface/transformers.git
-        conda install -y pytest mock scikit-learn parameterized
+        conda install -y pytest mock scikit-learn parameterized pandas
         pip install timeout_decorator
   - name: Run Transformers tests
     command: |

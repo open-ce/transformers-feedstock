@@ -11,16 +11,24 @@ source:
 
 build:
   noarch: python
-  number: 4
+  number: 5
   string: py_pb{{ protobuf | replace(".*", "")}}_{{ PKG_BUILDNUM }}
   script: '{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv '
 
 requirements:
   build:
     - git >={{ git }}
+    # Use pins to control cos6/cos7 match
+    - libgcc-ng  {{ libgcc }}
+    - libstdcxx-ng  {{ libstdcxx }}
+
   host:
     - pip {{ pip }}
     - python
+    # Use pins to control cos6/cos7 match
+    - libgcc-ng  {{ libgcc }}
+    - libstdcxx-ng  {{ libstdcxx }}
+
   run:
     - filelock  
     - numpy {{ numpy }}
@@ -36,6 +44,10 @@ requirements:
     - packaging
 
 test:
+  requires:
+    # Use pins to control cos6/cos7 match
+    - libgcc-ng  {{ libgcc }}
+    - libstdcxx-ng  {{ libstdcxx }}
   imports:
     - transformers
     - transformers.commands

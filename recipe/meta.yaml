@@ -42,6 +42,9 @@ requirements:
     - tqdm {{ tqdm }}
     - dataclasses                         #[py36]
     - packaging
+    # Use pins to control cos6/cos7 match
+    - libgcc-ng  {{ libgcc }}
+    - libstdcxx-ng  {{ libstdcxx }}
 
 test:
   requires:

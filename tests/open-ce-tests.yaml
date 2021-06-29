@@ -10,6 +10,6 @@ tests:
         cd transformers
         mkdir .cache
         export TRANSFORMERS_CACHE=$(pwd)/.cache
-        pytest --ignore='tests/test_retrieval_rag.py' --ignore='tests/test_benchmark.py' --ignore='tests/test_benchmark_tf.py' --ignore='tests/test_processor_speech_to_text.py' --ignore 'tests/test_tokenization_speech_to_text.py' -k "not test_tokenization and not test_train_pipeline_custom_model and not testGradientAccumulatorDistributionStrategy" -v ./tests/
+        pytest --ignore='tests/test_retrieval_rag.py' --ignore='tests/test_benchmark.py' --ignore='tests/test_benchmark_tf.py' --ignore='tests/test_processor_speech_to_text.py' --ignore 'tests/test_tokenization_speech_to_text.py' --ignore='tests/test_feature_extraction_speech_to_text.py' -k "not test_tokenization and not test_train_pipeline_custom_model and not testGradientAccumulatorDistributionStrategy and not test_multi_gpu_data_parallel_forward" -v ./tests/
   - name: Clean tests
     command: rm -rf transformers

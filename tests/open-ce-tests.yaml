@@ -3,7 +3,7 @@ tests:
     command: |
         conda install -y git
         git clone --recursive -b v$(python -c "import transformers; print(transformers.__version__)") https://github.com/huggingface/transformers.git
-        conda install -y pytest black
+        conda install -y pytest black sentencepiece
   - name: Run Transformers tests
     command: |
         cd transformers

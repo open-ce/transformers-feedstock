@@ -4,13 +4,6 @@ tests:
         conda install -y git
         git clone --recursive -b v$(python -c "import transformers; print(transformers.__version__)") https://github.com/huggingface/transformers.git
         conda install -y pytest black
-        ARCH=$(arch)
-        if test "${ARCH}" == "x86_64"
-        then
-            ARCH="64"
-        fi
-#        conda install gxx_linux-${ARCH}
-#        pip install timeout_decorator datasets sacrebleu
   - name: Run Transformers tests
     command: |
         cd transformers

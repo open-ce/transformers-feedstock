@@ -7,6 +7,38 @@ tests:
   - name: Run Transformers tests
     command: |
         cd transformers
-        pytest -k "not test_batch_encode_dynamic_overflowing and not test_np_encode_plus_sent_to_model and not test_prepare_seq2seq_batch and not test_tf_encode_plus_sent_to_model and not test_torch_encode_plus_sent_to_model" -v tests/test_cli.py tests/test_configuration_auto.py tests/test_feature_extraction_auto.py tests/test_file_utils.py tests/test_hf_api.py tests/test_hf_argparser.py tests/test_logging.py tests/test_model_card.py tests/test_model_output.py tests/test_onnx.py tests/test_onnx_v2.py tests/test_processor_wav2vec2.py tests/test_tokenization_albert.py tests/test_tokenization_auto.py tests/test_tokenization_bert.py tests/test_tokenization_bert_generation.py tests/test_tokenization_bertweet.py tests/test_tokenization_blenderbot.py tests/test_tokenization_ctrl.py tests/test_tokenization_deberta.py tests/test_tokenization_distilbert.py tests/test_tokenization_dpr.py tests/test_tokenization_wav2vec2.py tests/test_utils_check_copies.py tests/test_versions_utils.py
+        SKIPPED_TESTS=(
+                     "not test_batch_encode_dynamic_overflowing and"
+                     "not test_np_encode_plus_sent_to_model and"
+                     "not test_prepare_seq2seq_batch and"
+                     "not test_tf_encode_plus_sent_to_model and"
+                     "not test_torch_encode_plus_sent_to_model"
+        )
+        TESTS_TO_RUN="tests/test_cli.py
+                      tests/test_configuration_auto.py
+                      tests/test_feature_extraction_auto.py
+                      tests/test_file_utils.py
+                      tests/test_hf_api.py
+                      tests/test_hf_argparser.py
+                      tests/test_logging.py
+                      tests/test_model_card.py
+                      tests/test_model_output.py
+                      tests/test_onnx.py
+                      tests/test_onnx_v2.py
+                      tests/test_processor_wav2vec2.py
+                      tests/test_tokenization_albert.py
+                      tests/test_tokenization_auto.py
+                      tests/test_tokenization_bert.py
+                      tests/test_tokenization_bert_generation.py
+                      tests/test_tokenization_bertweet.py
+                      tests/test_tokenization_blenderbot.py
+                      tests/test_tokenization_ctrl.py
+                      tests/test_tokenization_deberta.py
+                      tests/test_tokenization_distilbert.py
+                      tests/test_tokenization_dpr.py
+                      tests/test_tokenization_wav2vec2.py
+                      tests/test_utils_check_copies.py
+                      tests/test_versions_utils.py"
+        pytest -k "${SKIPPED_TESTS[*]}" -v ${TESTS_TO_RUN}
   - name: Clean tests
     command: rm -rf transformers

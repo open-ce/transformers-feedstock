@@ -8,10 +8,12 @@ package:
 source:
   git_url: https://github.com/huggingface/transformers.git
   git_rev: v{{ version }}
+  patches:
+    - 0001-Use-mkstemp-to-replace-deprecated-mktemp.patch
 
 build:
   noarch: python
-  number: 1
+  number: 2
   string: pyh{{ PKG_HASH }}_pb{{ protobuf | replace(".*", "")}}_{{ PKG_BUILDNUM }}
   script: '{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv '
 

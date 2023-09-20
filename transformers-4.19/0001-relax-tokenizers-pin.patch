@@ -1,0 +1,40 @@
+From 455bd81b0d092ab521fde8d29acc9740f86cced4 Mon Sep 17 00:00:00 2001
+From: Deepali Chourasia <deepch23@in.ibm.com>
+Date: Wed, 20 Sep 2023 05:19:31 +0000
+Subject: [PATCH] relax tokenizers pin
+
+update
+---
+ setup.py                                      | 2 +-
+ src/transformers/dependency_versions_table.py | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/setup.py b/setup.py
+index 5454e89b4..c10ce965d 100644
+--- a/setup.py
++++ b/setup.py
+@@ -157,7 +157,7 @@ _deps = [
+     "tf2onnx",
+     "timeout-decorator",
+     "timm",
+-    "tokenizers>=0.11.1,!=0.11.3,<0.13",
++    "tokenizers>=0.11.1,!=0.11.3,<0.14",
+     "torch>=1.0",
+     "torchaudio",
+     "pyctcdecode>=0.3.0",
+diff --git a/src/transformers/dependency_versions_table.py b/src/transformers/dependency_versions_table.py
+index cecba61c7..2a18931bf 100644
+--- a/src/transformers/dependency_versions_table.py
++++ b/src/transformers/dependency_versions_table.py
+@@ -63,7 +63,7 @@ deps = {
+     "tf2onnx": "tf2onnx",
+     "timeout-decorator": "timeout-decorator",
+     "timm": "timm",
+-    "tokenizers": "tokenizers>=0.11.1,!=0.11.3,<0.13",
++    "tokenizers": "tokenizers>=0.11.1,!=0.11.3,<0.14",
+     "torch": "torch>=1.0",
+     "torchaudio": "torchaudio",
+     "pyctcdecode": "pyctcdecode>=0.3.0",
+-- 
+2.40.1
+

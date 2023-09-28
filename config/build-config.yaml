@@ -1,0 +1,6 @@
+recipes:
+  - name : transformers-4.17
+    path : transformers-4.17
+
+  - name : transformers-4.19
+    path : transformers-4.19

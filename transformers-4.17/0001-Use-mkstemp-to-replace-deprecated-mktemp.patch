@@ -1,0 +1,25 @@
+From 4debed2c368c449248e3c8d2324d6b979c6f190f Mon Sep 17 00:00:00 2001
+From: Aman-Surkar <aman_surkar@persistent.com>
+Date: Tue, 19 Sep 2023 09:45:48 +0000
+Subject: [PATCH] Use mkstemp to replace deprecated mktemp
+
+---
+ .../seq2seq-distillation/_test_seq2seq_examples.py              | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/examples/research_projects/seq2seq-distillation/_test_seq2seq_examples.py b/examples/research_projects/seq2seq-distillation/_test_seq2seq_examples.py
+index d97c9d43b..ae695977c 100644
+--- a/examples/research_projects/seq2seq-distillation/_test_seq2seq_examples.py
++++ b/examples/research_projects/seq2seq-distillation/_test_seq2seq_examples.py
+@@ -164,7 +164,7 @@ class TestSummarizationDistiller(TestCasePlus):
+         transformer_ckpts = list(Path(model.output_dir).glob("**/*.bin"))
+         self.assertEqual(len(transformer_ckpts), 2)
+         examples = lmap(str.strip, Path(model.hparams.data_dir).joinpath("test.source").open().readlines())
+-        out_path = tempfile.mktemp()  # XXX: not being cleaned up
++        out_path = tempfile.mkstemp()[1] # XXX: not being cleaned up
+         generate_summaries_or_translations(examples, out_path, str(model.output_dir / "best_tfmr"))
+         self.assertTrue(Path(out_path).exists())
+ 
+-- 
+2.40.1
+

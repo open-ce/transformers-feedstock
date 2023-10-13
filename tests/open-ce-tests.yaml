@@ -2,8 +2,15 @@ tests:
   - name: Setup Transformers Tests
     command: |
         conda install -y git
-        git clone --recursive -b v$(python -c "import transformers; print(transformers.__version__)") https://github.com/huggingface/transformers.git
-        conda install -y pytest black sentencepiece
+        TRANSFORM_VERSION=$(python -c "import transformers; print(transformers.__version__)")
+        git clone -b v$TRANSFORM_VERSION https://github.com/huggingface/transformers.git
+        TRANSFORM_VERSION=$(python -c "import transformers; print(transformers.__version__)")
+        cd transformers
+        if [[ $TRANSFORM_VERSION == '4.19.2' ]]; then
+          git apply ${FEEDSTOCK_DIR}/transformers-4.19/0001-relax-tokenizers-pin.patch
+        fi
+        rm -rf transformers
+        conda install -y pytest black sentencepiece regex
         pip install timeout-decorator parameterized black
   - name: Run Transformers tests
     command: |

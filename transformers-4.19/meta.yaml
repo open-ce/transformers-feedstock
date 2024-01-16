@@ -10,7 +10,8 @@ source:
   git_rev: v{{ version }}
   patches:
     - 0001-Use-mkstemp-to-replace-deprecated-mktemp.patch
-    - 0001-relax-tokenizers-pin.patch
+    - 0002-relax-tokenizers-pin.patch
+    - 0003-PR27776.patch
 
 build:
   noarch: python

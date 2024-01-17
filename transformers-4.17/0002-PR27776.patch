@@ -1,0 +1,223 @@
+From 00ac507764ed1ae333350230955c45f3ad537e40 Mon Sep 17 00:00:00 2001
+From: Archana Shinde1 <archana.shinde2504@gmail.com>
+Date: Tue, 16 Jan 2024 05:59:37 +0000
+Subject: [PATCH] PR27776
+
+---
+ docs/source/model_doc/transfo-xl.mdx          | 38 ++++++++++++
+ src/transformers/models/rag/retrieval_rag.py  | 16 ++++-
+ .../transfo_xl/tokenization_transfo_xl.py     | 17 +++++-
+ tests/rag/test_retrieval_rag.py               | 58 -------------------
+ 4 files changed, 69 insertions(+), 60 deletions(-)
+
+diff --git a/docs/source/model_doc/transfo-xl.mdx b/docs/source/model_doc/transfo-xl.mdx
+index 7e2a77014..ccf3f3ffc 100644
+--- a/docs/source/model_doc/transfo-xl.mdx
++++ b/docs/source/model_doc/transfo-xl.mdx
+@@ -12,6 +12,44 @@ specific language governing permissions and limitations under the License.
+ 
+ # Transformer XL
+ 
++<Tip warning={true}>
++
++This model is in maintenance mode only, so we won't accept any new PRs changing its code. This model was deprecated due to security issues linked to `pickle.load`.
++
++We recommend switching to more recent models for improved security.
++
++In case you would still like to use `TransfoXL` in your experiments, we recommend using the [Hub checkpoint](https://huggingface.co/transfo-xl-wt103) with a specific revision to ensure you are downloading safe files from the Hub.
++
++You will need to set the environment variable `TRUST_REMOTE_CODE` to `True` in order to allow the
++usage of `pickle.load()`:
++
++```python
++import os
++from transformers import TransfoXLTokenizer, TransfoXLLMHeadModel
++
++os.environ["TRUST_REMOTE_CODE"] = "True"
++
++checkpoint = 'transfo-xl-wt103'
++revision = '40a186da79458c9f9de846edfaea79c412137f97'
++
++tokenizer = TransfoXLTokenizer.from_pretrained(checkpoint, revision=revision)
++model = TransfoXLLMHeadModel.from_pretrained(checkpoint, revision=revision)
++```
++
++If you run into any issues running this model, please reinstall the last version that supported this model: v4.35.0.
++You can do so by running the following command: `pip install -U transformers==4.35.0`.
++
++</Tip>
++
++<div class="flex flex-wrap space-x-1">
++<a href="https://huggingface.co/models?filter=transfo-xl">
++<img alt="Models" src="https://img.shields.io/badge/All_model_pages-transfo--xl-blueviolet">
++</a>
++<a href="https://huggingface.co/spaces/docs-demos/transfo-xl-wt103">
++<img alt="Spaces" src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue">
++</a>
++</div>
++
+ ## Overview
+ 
+ The Transformer-XL model was proposed in [Transformer-XL: Attentive Language Models Beyond a Fixed-Length Context](https://arxiv.org/abs/1901.02860) by Zihang Dai, Zhilin Yang, Yiming Yang, Jaime Carbonell, Quoc V. Le, Ruslan
+diff --git a/src/transformers/models/rag/retrieval_rag.py b/src/transformers/models/rag/retrieval_rag.py
+index 6a498169d..88a45760d 100644
+--- a/src/transformers/models/rag/retrieval_rag.py
++++ b/src/transformers/models/rag/retrieval_rag.py
+@@ -24,7 +24,7 @@ import numpy as np
+ from ...file_utils import cached_path, is_datasets_available, is_faiss_available, is_remote_url, requires_backends
+ from ...tokenization_utils import PreTrainedTokenizer
+ from ...tokenization_utils_base import BatchEncoding
+-from ...utils import logging
++from ...utils import logging, strtobool
+ from .configuration_rag import RagConfig
+ from .tokenization_rag import RagTokenizer
+ 
+@@ -133,6 +133,13 @@ class LegacyIndex(Index):
+     def _load_passages(self):
+         logger.info(f"Loading passages from {self.index_path}")
+         passages_path = self._resolve_path(self.index_path, self.PASSAGE_FILENAME)
++        if not strtobool(os.environ.get("TRUST_REMOTE_CODE", "False")):
++            raise ValueError(
++                "This part uses `pickle.load` which is insecure and will execute arbitrary code that is potentially "
++                "malicious. It's recommended to never unpickle data that could have come from an untrusted source, or "
++                "that could have been tampered with. If you already verified the pickle data and decided to use it, "
++                "you can set the environment variable `TRUST_REMOTE_CODE` to `True` to allow it."
++            )
+         with open(passages_path, "rb") as passages_file:
+             passages = pickle.load(passages_file)
+         return passages
+@@ -142,6 +149,13 @@ class LegacyIndex(Index):
+         resolved_index_path = self._resolve_path(self.index_path, self.INDEX_FILENAME + ".index.dpr")
+         self.index = faiss.read_index(resolved_index_path)
+         resolved_meta_path = self._resolve_path(self.index_path, self.INDEX_FILENAME + ".index_meta.dpr")
++        if not strtobool(os.environ.get("TRUST_REMOTE_CODE", "False")):
++            raise ValueError(
++                "This part uses `pickle.load` which is insecure and will execute arbitrary code that is potentially "
++                "malicious. It's recommended to never unpickle data that could have come from an untrusted source, or "
++                "that could have been tampered with. If you already verified the pickle data and decided to use it, "
++                "you can set the environment variable `TRUST_REMOTE_CODE` to `True` to allow it."
++            )
+         with open(resolved_meta_path, "rb") as metadata_file:
+             self.index_id_to_db_id = pickle.load(metadata_file)
+         assert (
+diff --git a/src/transformers/models/transfo_xl/tokenization_transfo_xl.py b/src/transformers/models/transfo_xl/tokenization_transfo_xl.py
+index 5eb0c1b41..d32621d9a 100644
+--- a/src/transformers/models/transfo_xl/tokenization_transfo_xl.py
++++ b/src/transformers/models/transfo_xl/tokenization_transfo_xl.py
+@@ -31,7 +31,7 @@ import sacremoses as sm
+ 
+ from ...file_utils import cached_path, is_torch_available, torch_only_method
+ from ...tokenization_utils import PreTrainedTokenizer
+-from ...utils import logging
++from ...utils import logging, strtobool
+ 
+ 
+ if is_torch_available():
+@@ -215,6 +215,14 @@ class TransfoXLTokenizer(PreTrainedTokenizer):
+             vocab_dict = None
+             if pretrained_vocab_file is not None:
+                 # Priority on pickle files (support PyTorch and TF)
++                if not strtobool(os.environ.get("TRUST_REMOTE_CODE", "False")):
++                    raise ValueError(
++                        "This part uses `pickle.load` which is insecure and will execute arbitrary code that is "
++                        "potentially malicious. It's recommended to never unpickle data that could have come from an "
++                        "untrusted source, or that could have been tampered with. If you already verified the pickle "
++                        "data and decided to use it, you can set the environment variable "
++                        "`TRUST_REMOTE_CODE` to `True` to allow it."
++                    )
+                 with open(pretrained_vocab_file, "rb") as f:
+                     vocab_dict = pickle.load(f)
+ 
+@@ -776,6 +784,13 @@ def get_lm_corpus(datadir, dataset):
+         corpus = torch.load(fn_pickle)
+     elif os.path.exists(fn):
+         logger.info("Loading cached dataset from pickle...")
++        if not strtobool(os.environ.get("TRUST_REMOTE_CODE", "False")):
++            raise ValueError(
++                "This part uses `pickle.load` which is insecure and will execute arbitrary code that is potentially "
++                "malicious. It's recommended to never unpickle data that could have come from an untrusted source, or "
++                "that could have been tampered with. If you already verified the pickle data and decided to use it, "
++                "you can set the environment variable `TRUST_REMOTE_CODE` to `True` to allow it."
++            )
+         with open(fn, "rb") as fp:
+             corpus = pickle.load(fp)
+     else:
+diff --git a/tests/rag/test_retrieval_rag.py b/tests/rag/test_retrieval_rag.py
+index c6c1e1136..55b318c1c 100644
+--- a/tests/rag/test_retrieval_rag.py
++++ b/tests/rag/test_retrieval_rag.py
+@@ -174,37 +174,6 @@ class RagRetrieverTest(TestCase):
+             )
+         return retriever
+ 
+-    def get_dummy_legacy_index_retriever(self):
+-        dataset = Dataset.from_dict(
+-            {
+-                "id": ["0", "1"],
+-                "text": ["foo", "bar"],
+-                "title": ["Foo", "Bar"],
+-                "embeddings": [np.ones(self.retrieval_vector_size + 1), 2 * np.ones(self.retrieval_vector_size + 1)],
+-            }
+-        )
+-        dataset.add_faiss_index("embeddings", string_factory="Flat", metric_type=faiss.METRIC_INNER_PRODUCT)
+-
+-        index_file_name = os.path.join(self.tmpdirname, "hf_bert_base.hnswSQ8_correct_phi_128.c_index")
+-        dataset.save_faiss_index("embeddings", index_file_name + ".index.dpr")
+-        pickle.dump(dataset["id"], open(index_file_name + ".index_meta.dpr", "wb"))
+-
+-        passages_file_name = os.path.join(self.tmpdirname, "psgs_w100.tsv.pkl")
+-        passages = {sample["id"]: [sample["text"], sample["title"]] for sample in dataset}
+-        pickle.dump(passages, open(passages_file_name, "wb"))
+-
+-        config = RagConfig(
+-            retrieval_vector_size=self.retrieval_vector_size,
+-            question_encoder=DPRConfig().to_dict(),
+-            generator=BartConfig().to_dict(),
+-            index_name="legacy",
+-            index_path=self.tmpdirname,
+-        )
+-        retriever = RagRetriever(
+-            config, question_encoder_tokenizer=self.get_dpr_tokenizer(), generator_tokenizer=self.get_bart_tokenizer()
+-        )
+-        return retriever
+-
+     def test_canonical_hf_index_retriever_retrieve(self):
+         n_docs = 1
+         retriever = self.get_dummy_canonical_hf_index_retriever()
+@@ -288,33 +257,6 @@ class RagRetrieverTest(TestCase):
+             out = retriever.retrieve(hidden_states, n_docs=1)
+             self.assertTrue(out is not None)
+ 
+-    def test_legacy_index_retriever_retrieve(self):
+-        n_docs = 1
+-        retriever = self.get_dummy_legacy_index_retriever()
+-        hidden_states = np.array(
+-            [np.ones(self.retrieval_vector_size), -np.ones(self.retrieval_vector_size)], dtype=np.float32
+-        )
+-        retrieved_doc_embeds, doc_ids, doc_dicts = retriever.retrieve(hidden_states, n_docs=n_docs)
+-        self.assertEqual(retrieved_doc_embeds.shape, (2, n_docs, self.retrieval_vector_size))
+-        self.assertEqual(len(doc_dicts), 2)
+-        self.assertEqual(sorted(doc_dicts[0]), ["text", "title"])
+-        self.assertEqual(len(doc_dicts[0]["text"]), n_docs)
+-        self.assertEqual(doc_dicts[0]["text"][0], "bar")  # max inner product is reached with second doc
+-        self.assertEqual(doc_dicts[1]["text"][0], "foo")  # max inner product is reached with first doc
+-        self.assertListEqual(doc_ids.tolist(), [[1], [0]])
+-
+-    def test_legacy_hf_index_retriever_save_and_from_pretrained(self):
+-        retriever = self.get_dummy_legacy_index_retriever()
+-        with tempfile.TemporaryDirectory() as tmp_dirname:
+-            retriever.save_pretrained(tmp_dirname)
+-            retriever = RagRetriever.from_pretrained(tmp_dirname)
+-            self.assertIsInstance(retriever, RagRetriever)
+-            hidden_states = np.array(
+-                [np.ones(self.retrieval_vector_size), -np.ones(self.retrieval_vector_size)], dtype=np.float32
+-            )
+-            out = retriever.retrieve(hidden_states, n_docs=1)
+-            self.assertTrue(out is not None)
+-
+     @require_torch
+     @require_tokenizers
+     @require_sentencepiece
+-- 
+2.40.1
+

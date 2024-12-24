@@ -12,6 +12,7 @@ source:
     - 0001-Use-mkstemp-to-replace-deprecated-mktemp.patch
     - 0002-relax-tokenizers-pin.patch
     - 0003-PR27776.patch
+    - 0001-Backported-CVE-2024-3568.patch
 
 build:
   noarch: python
@@ -37,7 +38,7 @@ requirements:
     - tqdm {{ tqdm }}
     - packaging
     - huggingface_hub
-    - importlib_metadata
+    - importlib_metadata 6.*
 
 test:
   imports:
